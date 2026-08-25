@@ -1,12 +1,14 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
 # Association tables for many-to-many relationships if needed
 # For now, keeping it simple with foreign keys
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -20,13 +22,24 @@ class User(db.Model):
     manager = db.Column(db.String(100))
     joining_date = db.Column(db.Date)
     assigned_asset_id = db.Column(db.Integer, db.ForeignKey('assets.id'))
-    status = db.Column(db.String(20))  # Active, Inactive, Pending
+    status = db.Column(db.String(20), default='Active')  # Active, Inactive, Pending
     remarks = db.Column(db.Text)
+    password_hash = db.Column(db.String(256))
+    is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationship
     assigned_asset = db.relationship('Asset', foreign_keys=[assigned_asset_id])
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_id(self):
+        return str(self.id)
 
 class Asset(db.Model):
     __tablename__ = 'assets'

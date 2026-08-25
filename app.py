@@ -4,6 +4,7 @@ from database import init_app
 from datetime import datetime
 import json
 import os
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 def create_app():
     app = Flask(__name__)
@@ -46,12 +47,57 @@ def create_app():
             record_type=record_type,
             record_id=record_id,
             details=details,
-            user='Admin'  # In a real app, this would come from session/user
+            user=current_user.name if current_user.is_authenticated else 'Admin'
         )
         db.session.add(activity)
         db.session.commit()
 
+    # Flask-Login setup
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+    login_manager.login_message = 'Please log in to access this page.'
+    login_manager.login_message_category = 'info'
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    # Create default admin user
+    with app.app_context():
+        db.create_all()
+
+        # Create default settings if not exists
+        if not Settings.query.first():
+            default_settings = Settings(password='admin123')
+            db.session.add(default_settings)
+            db.session.commit()
+
+        # Create default admin user
+        admin_user = User.query.filter_by(employee_id='ADMIN').first()
+        if not admin_user:
+            admin_user = User(
+                employee_id='ADMIN',
+                name='Admin',
+                email='admin@company.com',
+                department='IT',
+                designation='System Administrator',
+                status='Active',
+                is_admin=True
+            )
+            admin_user.set_password('Admin@123')
+            db.session.add(admin_user)
+            db.session.commit()
+
     # Routes
+
+    # Protect all routes except login, logout, static
+    @app.before_request
+    def require_login():
+        allowed_routes = ['login', 'logout', 'static']
+        if request.endpoint and request.endpoint not in allowed_routes:
+            if not current_user.is_authenticated:
+                return redirect(url_for('login', next=request.url))
 
     @app.route('/')
     def index():
@@ -909,6 +955,38 @@ def create_app():
             'warranty': Asset.query.filter(Asset.warranty_end > datetime.now().date()).count() if Asset.query.first() else 0
         }
         return jsonify(stats)
+
+    # Auth routes
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            employee_id = request.form.get('employee_id')
+            password = request.form.get('password')
+            remember = bool(request.form.get('remember'))
+            
+            user = User.query.filter_by(employee_id=employee_id).first()
+            
+            if user and user.check_password(password):
+                login_user(user, remember=remember)
+                log_activity('User login', 'User', user.id, f'User {user.name} logged in')
+                flash('Logged in successfully!', 'success')
+                next_page = request.args.get('next')
+                return redirect(next_page or url_for('index'))
+            else:
+                flash('Invalid employee ID or password', 'error')
+        
+        return render_template('login.html')
+
+    @app.route('/logout')
+    @login_required
+    def logout():
+        log_activity('User logout', 'User', current_user.id, f'User {current_user.name} logged out')
+        logout_user()
+        flash('You have been logged out.', 'info')
+        return redirect(url_for('login'))
 
     # Error handlers
     @app.errorhandler(404)
