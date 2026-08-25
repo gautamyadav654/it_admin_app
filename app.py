@@ -65,12 +65,18 @@ def create_app():
 
     # Create tables and default data
     with app.app_context():
-        # Force drop all tables with raw SQL to handle Neon constraints
+        # Force drop all tables individually for Neon compatibility
         try:
-            db.session.execute(db.text('DROP SCHEMA public CASCADE; CREATE SCHEMA public;'))
+            # Get all table names and drop them
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            for table in reversed(tables):  # Reverse for FK constraints
+                db.session.execute(db.text(f'DROP TABLE IF EXISTS "{table}" CASCADE;'))
             db.session.commit()
-        except:
+        except Exception as e:
             db.session.rollback()
+            print(f"Drop tables error: {e}")
         
         db.create_all()
 
