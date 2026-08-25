@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block page_title %}Network Devices{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_network') }}" class="btn btn-info"><i class="bi bi-plus"></i> Add Device</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by device name, IP, type..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Search</button>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('network') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Network Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Device Name</th>
+                        <th>IP Address</th>
+                        <th>MAC Address</th>
+                        <th>Type</th>
+                        <th>Location</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for net in network %}
+                    <tr>
+                        <td class="fw-medium">{{ net.device_name }}</td>
+                        <td>{{ net.ip_address or '-' }}</td>
+                        <td>{{ net.mac_address or '-' }}</td>
+                        <td>{{ net.device_type or '-' }}</td>
+                        <td>{{ net.location or '-' }}</td>
+                        <td>{{ net.manufacturer or '-' }}</td>
+                        <td>{{ net.model or '-' }}</td>
+                        <td>
+                            <span class="badge badge-status bg-{% if net.status == 'Active' %}success{% elif net.status == 'Maintenance' %}warning{% else %}secondary{% endif %}">
+                                {{ net.status or 'Active' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                {% if net.device_type and 'Switch' in net.device_type %}
+                                <a href="{{ url_for('switch_ports', id=net.id) }}" class="btn btn-outline-info" title="View Ports"><i class="bi bi-diagram-3"></i></a>
+                                {% endif %}
+                                <a href="#" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">No network devices found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

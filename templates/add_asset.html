@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block page_title %}Add Asset{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('assets') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0">
+        <h5 class="mb-0">Add New Asset</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Asset ID <span class="text-danger">*</span></label>
+                <input type="text" name="asset_id" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Hostname <span class="text-danger">*</span></label>
+                <input type="text" name="hostname" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Asset Type</label>
+                <select name="asset_type" class="form-select">
+                    <option value="">Select...</option>
+                    {% for t in asset_types %}
+                    <option value="{{ t }}">{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Manufacturer</label>
+                <select name="manufacturer" class="form-select">
+                    <option value="">Select...</option>
+                    {% for m in manufacturers %}
+                    <option value="{{ m }}">{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Model</label>
+                <input type="text" name="model" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Serial Number</label>
+                <input type="text" name="serial_number" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Operating System</label>
+                <select name="operating_system" class="form-select">
+                    <option value="">Select...</option>
+                    {% for os in operating_systems %}
+                    <option value="{{ os }}">{{ os }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">RAM</label>
+                <input type="text" name="ram" class="form-control" placeholder="e.g., 16GB">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Storage</label>
+                <input type="text" name="storage" class="form-control" placeholder="e.g., 512GB SSD">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Processor</label>
+                <input type="text" name="processor" class="form-control" placeholder="e.g., Intel i7">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Assigned User</label>
+                <select name="assigned_user" class="form-select">
+                    <option value="">Unassigned</option>
+                    {% for u in users %}
+                    <option value="{{ u.name }}">{{ u.name }} ({{ u.employee_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Employee ID</label>
+                <input type="text" name="employee_id" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Department</label>
+                <select name="department" class="form-select">
+                    <option value="">Select...</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept }}">{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Location</label>
+                <select name="location" class="form-select">
+                    <option value="">Select...</option>
+                    {% for loc in locations %}
+                    <option value="{{ loc }}">{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">IP Address</label>
+                <input type="text" name="ip_address" class="form-control" placeholder="192.168.x.x">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">MAC Address</label>
+                <input type="text" name="mac_address" class="form-control" placeholder="00:1A:2B:3C:4D:5E">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Purchase Date</label>
+                <input type="date" name="purchase_date" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Warranty Start</label>
+                <input type="date" name="warranty_start" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Warranty End</label>
+                <input type="date" name="warranty_end" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">AMC Info</label>
+                <input type="text" name="amc_info" class="form-control" placeholder="AMC-XXXX">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Asset Status</label>
+                <select name="asset_status" class="form-select">
+                    {% for s in asset_statuses %}
+                    <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Remarks</label>
+                <textarea name="remarks" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Save Asset</button>
+                <a href="{{ url_for('assets') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block page_title %}Software{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_software') }}" class="btn btn-primary"><i class="bi bi-plus"></i> Add Software</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by name, license key, assigned to..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Search</button>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('software') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Software Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Version</th>
+                        <th>License Key</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Install Date</th>
+                        <th>Expiry Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sw in software %}
+                    <tr>
+                        <td class="fw-medium">{{ sw.name }}</td>
+                        <td>{{ sw.version or '-' }}</td>
+                        <td>{{ sw.license_key or '-' }}</td>
+                        <td>{{ sw.assigned_to or '-' }}</td>
+                        <td>
+                            <span class="badge badge-status bg-{% if sw.status == 'Active' %}success{% elif sw.status == 'Expired' %}danger{% else %}secondary{% endif %}">
+                                {{ sw.status or 'Active' }}
+                            </span>
+                        </td>
+                        <td>{{ sw.install_date.strftime('%Y-%m-%d') if sw.install_date else '-' }}</td>
+                        <td>
+                            {% if sw.expiry_date %}
+                                <span class="{% if sw.expiry_date > datetime.now().date() %}text-success{% else %}text-danger{% endif %} fw-medium">
+                                    {{ sw.expiry_date.strftime('%Y-%m-%d') }}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No software records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

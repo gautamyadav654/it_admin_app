@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block page_title %}Edit User{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('users') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0">
+        <h5 class="mb-0">Edit User: {{ user.name }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Employee ID <span class="text-danger">*</span></label>
+                <input type="text" name="employee_id" class="form-control" value="{{ user.employee_id }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Department</label>
+                <select name="department" class="form-select">
+                    <option value="">Select...</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept }}" {% if user.department == dept %}selected{% endif %}>{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Designation</label>
+                <select name="designation" class="form-select">
+                    <option value="">Select...</option>
+                    {% for desig in designations %}
+                    <option value="{{ desig }}" {% if user.designation == desig %}selected{% endif %}>{{ desig }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" value="{{ user.email or '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Contact</label>
+                <input type="text" name="contact" class="form-control" value="{{ user.contact or '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <select name="location" class="form-select">
+                    <option value="">Select...</option>
+                    {% for loc in locations %}
+                    <option value="{{ loc }}" {% if user.location == loc %}selected{% endif %}>{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Manager</label>
+                <input type="text" name="manager" class="form-control" value="{{ user.manager or '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Joining Date</label>
+                <input type="date" name="joining_date" class="form-control" value="{{ user.joining_date.strftime('%Y-%m-%d') if user.joining_date else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="Active" {% if user.status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Inactive" {% if user.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="Pending" {% if user.status == 'Pending' %}selected{% endif %}>Pending</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Remarks</label>
+                <textarea name="remarks" class="form-control" rows="3">{{ user.remarks or '' }}</textarea>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Update User</button>
+                <a href="{{ url_for('users') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

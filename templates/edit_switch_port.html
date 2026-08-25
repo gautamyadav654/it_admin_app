@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block page_title %}Edit Port - {{ switch.device_name }}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('switch_ports', id=switch.id) }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0">
+        <h5 class="mb-0">Edit Port: {{ port.port_number }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Port Number <span class="text-danger">*</span></label>
+                <input type="text" name="port_number" class="form-control" value="{{ port.port_number }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Port Name</label>
+                <input type="text" name="port_name" class="form-control" value="{{ port.port_name or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="Empty" {% if port.status == 'Empty' %}selected{% endif %}>Empty</option>
+                    <option value="Connected" {% if port.status == 'Connected' %}selected{% endif %}>Connected</option>
+                    <option value="Down" {% if port.status == 'Down' %}selected{% endif %}>Down</option>
+                    <option value="Error" {% if port.status == 'Error' %}selected{% endif %}>Error</option>
+                    <option value="Disabled" {% if port.status == 'Disabled' %}selected{% endif %}>Disabled</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Connected Device</label>
+                <select name="connected_device" class="form-select" id="deviceSelect">
+                    <option value="">Select Asset...</option>
+                    {% for a in assets %}
+                    <option value="{{ a.hostname }}" data-ip="{{ a.ip_address }}" data-mac="{{ a.mac_address }}" {% if port.connected_device == a.hostname %}selected{% endif %}>{{ a.hostname }} ({{ a.asset_id }}) - {{ a.ip_address }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Device IP</label>
+                <input type="text" name="connected_device_ip" class="form-control" id="deviceIP" value="{{ port.connected_device_ip or '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Device MAC</label>
+                <input type="text" name="connected_device_mac" class="form-control" id="deviceMAC" value="{{ port.connected_device_mac or '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">VLAN</label>
+                <input type="text" name="vlan" class="form-control" value="{{ port.vlan or '' }}" placeholder="e.g., 10, 100, 100-200">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Speed</label>
+                <select name="speed" class="form-select">
+                    <option value="Auto" {% if port.speed == 'Auto' %}selected{% endif %}>Auto</option>
+                    <option value="10M" {% if port.speed == '10M' %}selected{% endif %}>10 Mbps</option>
+                    <option value="100M" {% if port.speed == '100M' %}selected{% endif %}>100 Mbps</option>
+                    <option value="1G" {% if port.speed == '1G' %}selected{% endif %}>1 Gbps</option>
+                    <option value="10G" {% if port.speed == '10G' %}selected{% endif %}>10 Gbps</option>
+                    <option value="25G" {% if port.speed == '25G' %}selected{% endif %}>25 Gbps</option>
+                    <option value="40G" {% if port.speed == '40G' %}selected{% endif %}>40 Gbps</option>
+                    <option value="100G" {% if port.speed == '100G' %}selected{% endif %}>100 Gbps</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Duplex</label>
+                <select name="duplex" class="form-select">
+                    <option value="Auto" {% if port.duplex == 'Auto' %}selected{% endif %}>Auto</option>
+                    <option value="Full" {% if port.duplex == 'Full' %}selected{% endif %}>Full</option>
+                    <option value="Half" {% if port.duplex == 'Half' %}selected{% endif %}>Half</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" name="poe" id="poe" {% if port.poe %}checked{% endif %}>
+                    <label class="form-check-label" for="poe">PoE Enabled</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">PoE Power (Watts)</label>
+                <input type="text" name="poe_power" class="form-control" value="{{ port.poe_power or '' }}" placeholder="e.g., 15.4, 30, 60">
+            </div>
+            <div class="col-12">
+                <label class="form-label">Remarks</label>
+                <textarea name="remarks" class="form-control" rows="2">{{ port.remarks or '' }}</textarea>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Update Port</button>
+                <a href="{{ url_for('switch_ports', id=switch.id) }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('deviceSelect').addEventListener('change', function() {
+    const option = this.options[this.selectedIndex];
+    if (option.dataset.ip) {
+        document.getElementById('deviceIP').value = option.dataset.ip;
+    }
+    if (option.dataset.mac) {
+        document.getElementById('deviceMAC').value = option.dataset.mac;
+    }
+});
+</script>
+{% endblock %}

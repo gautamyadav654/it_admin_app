@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_user') }}" class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-plus"></i> Add User</a>
+<a href="{{ url_for('add_asset') }}" class="btn btn-sm btn-outline-success me-2"><i class="bi bi-plus"></i> Add Asset</a>
+<a href="{{ url_for('add_incident') }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-plus"></i> New Ticket</a>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Users</h6>
+                        <h3 class="mb-0">{{ stats.users }}</h3>
+                    </div>
+                    <i class="bi bi-people-fill text-primary fs-1 opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Assets</h6>
+                        <h3 class="mb-0">{{ stats.assets }}</h3>
+                    </div>
+                    <i class="bi bi-pc-display-fill text-success fs-1 opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Open Incidents</h6>
+                        <h3 class="mb-0 text-warning">{{ stats.open_incidents }}</h3>
+                    </div>
+                    <i class="bi bi-ticket-perforated-fill text-warning fs-1 opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Warranty Active</h6>
+                        <h3 class="mb-0">{{ stats.warranty }}</h3>
+                    </div>
+                    <i class="bi bi-shield-check-fill text-info fs-1 opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Activity & Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Incidents This Year</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="incidentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for activity in recent_activity %}
+                    <div class="list-group-item px-3 py-2 border-0">
+                        <div class="d-flex align-items-start">
+                            <div class="bg-light rounded-circle p-2 me-3">
+                                <i class="bi bi-{% if activity.record_type == 'User' %}person{% elif activity.record_type == 'Asset' %}pc-display{% elif activity.record_type == 'Incident' %}ticket-perforated{% elif activity.record_type == 'Software' %}box-seam{% elif activity.record_type == 'Network' %}hdd-network{% elif activity.record_type == 'Maintenance' %}tools{% else %}clock-history{% endif %} text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium small">{{ activity.action }}</div>
+                                <div class="text-muted small">{{ activity.details }}</div>
+                                <div class="text-muted small">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }} by {{ activity.user }}</div>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ activity.record_type }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="list-group-item px-3 py-4 text-center text-muted">
+                        No recent activity
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Records -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Records</h5>
+                <a href="{{ url_for('activity') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in recent_records %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{% if record.type == 'Incident' %}warning{% elif record.type == 'User' %}primary{% elif record.type == 'Asset' %}success{% else %}secondary{% endif %}">
+                                        {{ record.type }}
+                                    </span>
+                                </td>
+                                <td class="fw-medium">{{ record.title }}</td>
+                                <td>{{ record.date }}</td>
+                                <td>
+                                    <span class="badge badge-status bg-{% if record.status in ['Active', 'New', 'Open'] %}success{% elif record.status in ['In Progress', 'Pending'] %}warning{% elif record.status in ['Closed', 'Resolved', 'Inactive', 'Retired'] %}secondary{% else %}info{% endif %}">
+                                        {{ record.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No recent records</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const ctx = document.getElementById('incidentChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ incident_chart_data.labels | tojson }},
+            datasets: [{
+                label: 'Incidents',
+                data: {{ incident_chart_data.data | tojson }},
+                backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

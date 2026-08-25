@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ switch.device_name }} - Port Details{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('network') }}" class="btn btn-outline-secondary me-2"><i class="bi bi-arrow-left"></i> Back to Network</a>
+<a href="{{ url_for('add_switch_port', id=switch.id) }}" class="btn btn-success"><i class="bi bi-plus"></i> Add Port</a>
+{% endblock %}
+
+{% block content %}
+<!-- Switch Info Card -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-hdd-network"></i> {{ switch.device_name }} ({{ switch.model }})</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <strong>IP Address:</strong> {{ switch.ip_address or '-' }}
+            </div>
+            <div class="col-md-3">
+                <strong>Location:</strong> {{ switch.location or '-' }}
+            </div>
+            <div class="col-md-3">
+                <strong>Type:</strong> {{ switch.device_type or '-' }}
+            </div>
+            <div class="col-md-3">
+                <strong>Status:</strong> 
+                <span class="badge bg-{% if switch.status == 'Active' %}success{% elif switch.status == 'Maintenance' %}warning{% else %}secondary{% endif %}">
+                    {{ switch.status or 'Active' }}
+                </span>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <strong>Manufacturer:</strong> {{ switch.manufacturer or '-' }}
+            </div>
+            <div class="col-md-3">
+                <strong>MAC Address:</strong> {{ switch.mac_address or '-' }}
+            </div>
+            <div class="col-md-6">
+                <strong>Remarks:</strong> {{ switch.remarks or '-' }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Port Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ ports|length }}</h3>
+                <p class="text-muted mb-0">Total Ports</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h3 class="text-success">{{ ports|selectattr('status', 'equalto', 'Connected')|list|length }}</h3>
+                <p class="text-muted mb-0">Connected</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h3 class="text-warning">{{ ports|selectattr('status', 'equalto', 'Empty')|list|length }}</h3>
+                <p class="text-muted mb-0">Empty</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm border-0 text-center">
+            <div class="card-body">
+                <h3 class="text-danger">{{ ports|selectattr('status', 'equalto', 'Down')|list|length }}</h3>
+                <p class="text-muted mb-0">Down/Error</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ports Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Switch Ports</h5>
+        <small class="text-muted">Click port to edit | Double-click to view details</small>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;">Port</th>
+                        <th style="width: 150px;">Name</th>
+                        <th style="width: 100px;">Status</th>
+                        <th>Connected Device</th>
+                        <th style="width: 130px;">Device IP</th>
+                        <th style="width: 150px;">Device MAC</th>
+                        <th style="width: 80px;">VLAN</th>
+                        <th style="width: 80px;">Speed</th>
+                        <th style="width: 80px;">Duplex</th>
+                        <th style="width: 60px;">PoE</th>
+                        <th>Remarks</th>
+                        <th style="width: 80px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for port in ports %}
+                    <tr class="{% if port.status == 'Connected' %}table-success{% elif port.status == 'Down' %}table-danger{% elif port.status == 'Error' %}table-warning{% endif %}">
+                        <td class="fw-monospace fw-bold">{{ port.port_number }}</td>
+                        <td>{{ port.port_name or '-' }}</td>
+                        <td>
+                            <span class="badge badge-status bg-{% if port.status == 'Connected' %}success{% elif port.status == 'Empty' %}secondary{% elif port.status == 'Down' %}danger{% elif port.status == 'Error' %}warning{% else %}info{% endif %}">
+                                {{ port.status or 'Empty' }}
+                            </span>
+                        </td>
+                        <td class="fw-medium">{{ port.connected_device or '<span class="text-muted">-</span>'|safe }}</td>
+                        <td><code>{{ port.connected_device_ip or '-' }}</code></td>
+                        <td><code>{{ port.connected_device_mac or '-' }}</code></td>
+                        <td><span class="badge bg-info">{{ port.vlan or '-' }}</span></td>
+                        <td>{{ port.speed or '-' }}</td>
+                        <td>{{ port.duplex or '-' }}</td>
+                        <td>
+                            {% if port.poe %}
+                                <i class="bi bi-lightning-fill text-warning" title="PoE: {{ port.poe_power or 'Enabled' }}"></i>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-truncate" style="max-width: 200px;">{{ port.remarks or '-' }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('edit_switch_port', switch_id=switch.id, port_id=port.id) }}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="{{ url_for('delete_switch_port', switch_id=switch.id, port_id=port.id) }}" class="btn btn-outline-danger" title="Delete" onclick="return confirm('Delete this port?')"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="12" class="text-center text-muted py-4">No ports configured. <a href="{{ url_for('add_switch_port', id=switch.id) }}">Add first port</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Port Grid View -->
+<div class="card shadow-sm border-0 mt-4">
+    <div class="card-header bg-white border-0">
+        <h5 class="mb-0">Visual Port Layout</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-2">
+            {% for port in ports %}
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 col-xl-1">
+                <div class="card port-card h-100 {% if port.status == 'Connected' %}border-success{% elif port.status == 'Down' %}border-danger{% elif port.status == 'Error' %}border-warning{% else %}border-secondary{% endif %}" style="border-width: 2px;">
+                    <div class="card-body p-2 text-center">
+                        <div class="fw-bold small">{{ port.port_number }}</div>
+                        <div class="badge badge-status bg-{% if port.status == 'Connected' %}success{% elif port.status == 'Empty' %}secondary{% elif port.status == 'Down' %}danger{% elif port.status == 'Error' %}warning{% else %}info{% endif %} fs-6">
+                            {{ port.status or 'Empty' }}
+                        </div>
+                        {% if port.connected_device %}
+                        <div class="text-truncate small text-primary mt-1" title="{{ port.connected_device }}">{{ port.connected_device }}</div>
+                        {% endif %}
+                        {% if port.connected_device_ip %}
+                        <div class="text-truncate small text-muted" title="{{ port.connected_device_ip }}">{{ port.connected_device_ip }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.port-card { transition: transform 0.2s, box-shadow 0.2s; }
+.port-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.fw-monospace { font-family: 'Courier New', monospace; }
+</style>
+{% endblock %}

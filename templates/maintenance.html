@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block page_title %}Maintenance Records{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_maintenance') }}" class="btn btn-secondary"><i class="bi bi-plus"></i> Add Record</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by asset ID, name, type..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Search</button>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('maintenance') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Maintenance Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Asset ID</th>
+                        <th>Asset Name</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Performed By</th>
+                        <th>Status</th>
+                        <th>Cost</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in maintenance %}
+                    <tr>
+                        <td>{{ m.asset_id }}</td>
+                        <td>{{ m.asset_name or '-' }}</td>
+                        <td>{{ m.maintenance_type or '-' }}</td>
+                        <td>{{ m.date.strftime('%Y-%m-%d') if m.date else '-' }}</td>
+                        <td>{{ m.performed_by or '-' }}</td>
+                        <td>
+                            <span class="badge badge-status bg-{% if m.status == 'Completed' %}success{% elif m.status == 'In Progress' %}info{% elif m.status == 'Scheduled' %}warning{% else %}secondary{% endif %}">
+                                {{ m.status or 'Completed' }}
+                            </span>
+                        </td>
+                        <td>{{ m.cost or '-' }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No maintenance records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

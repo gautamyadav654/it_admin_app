@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block page_title %}Assets{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_asset') }}" class="btn btn-success"><i class="bi bi-plus"></i> Add Asset</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filter -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search by asset ID, hostname, model, user..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for s in statuses %}
+                    <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Filter</button>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ url_for('assets') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assets Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Asset ID</th>
+                        <th>Hostname</th>
+                        <th>Type</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Assigned To</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Warranty</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in assets %}
+                    <tr>
+                        <td>{{ asset.asset_id }}</td>
+                        <td class="fw-medium">{{ asset.hostname }}</td>
+                        <td>{{ asset.asset_type or '-' }}</td>
+                        <td>{{ asset.manufacturer or '-' }}</td>
+                        <td>{{ asset.model or '-' }}</td>
+                        <td>{{ asset.assigned_user or '-' }}</td>
+                        <td>{{ asset.location or '-' }}</td>
+                        <td>
+                            <span class="badge badge-status bg-{% if asset.asset_status == 'Active' %}success{% elif asset.asset_status == 'In Stock' %}info{% elif asset.asset_status == 'Under Repair' %}warning{% elif asset.asset_status == 'Assigned' %}primary{% elif asset.asset_status == 'Retired' %}secondary{% else %}danger{% endif %}">
+                                {{ asset.asset_status or 'In Stock' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if asset.warranty_end %}
+                                <span class="badge {% if asset.warranty_end > datetime.now().date() %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ asset.warranty_end.strftime('%Y-%m-%d') }}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">No assets found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

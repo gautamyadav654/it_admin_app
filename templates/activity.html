@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block page_title %}Activity Log{% endblock %}
+
+{% block page_actions %}
+<form method="POST" action="{{ url_for('clear_activity') }}" onsubmit="return confirm('Clear all activity log?')" class="d-inline">
+    <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Clear Log</button>
+</form>
+{% endblock %}
+
+{% block content %}
+<!-- Search -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by action, record type, details..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Search</button>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('activity') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Activity Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Record Type</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in activity %}
+                    <tr>
+                        <td class="text-nowrap">{{ act.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ act.user }}</td>
+                        <td><span class="badge bg-primary">{{ act.action }}</span></td>
+                        <td><span class="badge bg-info">{{ act.record_type }}</span></td>
+                        <td>{{ act.details }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No activity recorded</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block page_title %}Incidents{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_incident') }}" class="btn btn-warning"><i class="bi bi-plus"></i> New Ticket</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filter -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Search ticket, user, issue..." value="{{ search }}">
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for s in statuses %}
+                    <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="priority" class="form-select">
+                    <option value="">All Priority</option>
+                    {% for p in priorities %}
+                    <option value="{{ p }}" {% if p == priority_filter %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Filter</button>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ url_for('incidents') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Incidents Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Ticket #</th>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Asset</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Issue</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inc in incidents %}
+                    <tr>
+                        <td class="fw-medium">{{ inc.ticket_number }}</td>
+                        <td>{{ inc.date.strftime('%Y-%m-%d') if inc.date else '-' }}</td>
+                        <td>{{ inc.user or '-' }}</td>
+                        <td>{{ inc.asset or '-' }}</td>
+                        <td>{{ inc.category or '-' }}</td>
+                        <td>
+                            <span class="badge bg-{% if inc.priority == 'Critical' %}danger{% elif inc.priority == 'High' %}warning{% elif inc.priority == 'Medium' %}info{% else %}success{% endif %}">
+                                {{ inc.priority or 'Medium' }}
+                            </span>
+                        </td>
+                        <td>{{ inc.issue[:50] }}{% if inc.issue|length > 50 %}...{% endif %}</td>
+                        <td>
+                            <span class="badge badge-status bg-{% if inc.status in ['New', 'Open'] %}primary{% elif inc.status == 'In Progress' %}info{% elif inc.status == 'Pending' %}warning{% elif inc.status in ['Resolved', 'Closed'] %}success{% else %}secondary{% endif %}">
+                                {{ inc.status or 'New' }}
+                            </span>
+                        </td>
+                        <td>{{ inc.assigned_to or '-' }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">No incidents found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
