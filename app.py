@@ -36,7 +36,7 @@ def create_app():
 
         # Create default settings if not exists
         if not Settings.query.first():
-            default_settings = Settings(password='admin123')
+            default_settings = Settings(admin_password='admin123')
             db.session.add(default_settings)
             db.session.commit()
 
@@ -979,7 +979,7 @@ def create_app():
                 db.create_all()
                 
                 # Create default settings
-                default_settings = Settings(password='admin123')
+                default_settings = Settings(admin_password='admin123')
                 db.session.add(default_settings)
                 
                 # Create default admin user
