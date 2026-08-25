@@ -956,6 +956,52 @@ def create_app():
         }
         return jsonify(stats)
 
+    # Debug/Reset routes (remove in production)
+    @app.route('/debug/reset-db')
+    def reset_database():
+        """Drop all tables and recreate - for debugging only"""
+        try:
+            with app.app_context():
+                db.drop_all()
+                db.create_all()
+                
+                # Create default settings
+                default_settings = Settings(password='admin123')
+                db.session.add(default_settings)
+                
+                # Create default admin user
+                admin_user = User(
+                    employee_id='ADMIN',
+                    name='Admin',
+                    email='admin@company.com',
+                    department='IT',
+                    designation='System Administrator',
+                    status='Active',
+                    is_admin=True
+                )
+                admin_user.set_password('Admin@123')
+                db.session.add(admin_user)
+                
+                db.session.commit()
+                return 'Database reset successfully! <a href="/login">Go to Login</a>'
+        except Exception as e:
+            return f'Error: {str(e)}', 500
+
+    @app.route('/debug/db-info')
+    def db_info():
+        """Show database table info"""
+        try:
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            info = []
+            for table in tables:
+                columns = inspector.get_columns(table)
+                info.append(f"<b>{table}</b>: {', '.join([c['name'] for c in columns])}")
+            return '<br>'.join(info) if info else 'No tables found'
+        except Exception as e:
+            return f'Error: {str(e)}', 500
+
     # Auth routes
     @app.route('/login', methods=['GET', 'POST'])
     def login():
