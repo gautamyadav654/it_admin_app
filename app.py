@@ -65,13 +65,18 @@ def create_app():
 
     # Create tables and default data
     with app.app_context():
-        # Drop all tables first to ensure clean schema
-        db.drop_all()
+        # Force drop all tables with raw SQL to handle Neon constraints
+        try:
+            db.session.execute(db.text('DROP SCHEMA public CASCADE; CREATE SCHEMA public;'))
+            db.session.commit()
+        except:
+            db.session.rollback()
+        
         db.create_all()
 
         # Create default settings if not exists
         if not Settings.query.first():
-            default_settings = Settings(password='admin123')
+            default_settings = Settings(admin_password='admin123')
             db.session.add(default_settings)
             db.session.commit()
 
