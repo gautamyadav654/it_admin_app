@@ -63,8 +63,10 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Create default admin user
+    # Create tables and default data
     with app.app_context():
+        # Drop all tables first to ensure clean schema
+        db.drop_all()
         db.create_all()
 
         # Create default settings if not exists
@@ -905,7 +907,7 @@ def create_app():
         if request.method == 'POST':
             new_password = request.form.get('new_password')
             if new_password:
-                settings.password = new_password
+                settings.admin_password = new_password
                 db.session.commit()
 
                 # Log activity
